@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -19,6 +20,9 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+/**
+ * @author Chris Killian, Jarod Wilken
+ */
 public class MainActivity extends AppCompatActivity {
 
     private TextView textViewStatus;
@@ -30,6 +34,11 @@ public class MainActivity extends AppCompatActivity {
     private Button buttonSignOut;
     private Button buttonStartChat;
     private FirebaseAuth mAuth;
+
+    /**
+     * Sets up the textViews and buttons. Creates an
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,141 +55,122 @@ public class MainActivity extends AppCompatActivity {
         buttonStartChat = findViewById(R.id.buttonStartChat);
 
 
-
         buttonLogin.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Log.d("CIS3334", "normal login ");
                 signIn(editTextEmail.getText().toString(), editTextPassword.getText().toString());
             }
         });
 
         buttonCreateLogin.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Log.d("CIS3334", "Create Account ");
                 createAccount(editTextEmail.getText().toString(), editTextPassword.getText().toString());
             }
         });
 
         buttonGoogleLogin.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Log.d("CIS3334", "Google login ");
                 googleSignIn();
             }
         });
 
         buttonSignOut.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Log.d("CIS3334", "Logging out - signOut ");
                 signOut();
             }
         });
-
+        //Sets up chat activity.
         buttonStartChat.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Log.d("CIS3334", "Starting Chat Intent ");
                 Intent intent = new Intent(MainActivity.this, ChatActivity.class);
                 startActivity(intent);
-
             }
         });
-
+        // Configure Google Sign In
     }
 
-    private void createAccount(String email, String password) {
-        Toast.makeText(getApplicationContext(), "Create Account not implemented yet !!! ", Toast.LENGTH_LONG).show();
-
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d("CIS3334", "createUserWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            //updateUI(user);
-                            textViewStatus.setText("Status: Logged in!!");
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Log.w("CIS3334", "createUserWithEmail:failure", task.getException());
-                            Toast.makeText(MainActivity.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                            textViewStatus.setText("Status: Logged in Failed!!");
-
-                            //updateUI(null);
-                        }
-
-                        // ...
-                    }
-                });
-
-
-    }
-
-    private void signIn(String email, String password){
-        Toast.makeText(getApplicationContext(), "signIn not implemented yet !!! ", Toast.LENGTH_LONG).show();
-
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d("CIS3334", "createUserWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            //updateUI(user);
-                            textViewStatus.setText("Status: Logged in!!");
-
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Log.w("CIS3334", "createUserWithEmail:failure", task.getException());
-                            Toast.makeText(MainActivity.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                            //updateUI(null);
-                            textViewStatus.setText("Status: Logged in Failed!!");
-
-                        }
-
-                        // ...
-                    }
-                });
-
-
-    }
-
-    private void signOut () {
-        Toast.makeText(getApplicationContext(), "signOut not implemented yet !!! ", Toast.LENGTH_LONG).show();
-
-        mAuth.signOut();
-
-
-    }
-
-    private void googleSignIn() {
-
-        Toast.makeText(getApplicationContext(), "Google SignIn not implemented yet !!! ", Toast.LENGTH_LONG).show();
-
-    }
+    /**
+     *Checks if the user is already signed in or signed out.
+     */
     @Override
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
-
-        
         FirebaseUser currentUser = mAuth.getCurrentUser();
         //updateUI(currentUser);
         if (currentUser != null) {
             // User is signed in
-            Log.d("CIS3334", "onAuthStateChanged:signed_in:" + currentUser.getUid());
-            Toast.makeText(MainActivity.this, "User Signed In", Toast.LENGTH_LONG).show();
             textViewStatus.setText("Signed In");
         } else {
             // User is signed out
-            Log.d("CIS3334", "onAuthStateChanged:signed_out");
-            Toast.makeText(MainActivity.this, "User Signed Out", Toast.LENGTH_LONG).show();
             textViewStatus.setText("Signed Out");
         }
     }
 
+    /**
+     * Takes in an email and password and add its to the FireBase authentication user list.
+     * @param email the entered email.
+     * @param password the entered password.
+     */
+    private void createAccount(String email, String password) {
+        Log.d("CIS3334", "createAccount:" + email);
+        mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            //updateUI(user);
+                            textViewStatus.setText("Status: Account Created!");
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            textViewStatus.setText("Status: Account Creation Failed!");
+                            //updateUI(null);
+                        }
+                    }
+                });
+    }
+
+    /**
+     * Authenticates a user if the correct password and email matched the FireBase authentication list.
+     * @param email the entered email.
+     * @param password the entered password.
+     */
+    private void signIn(String email, String password) {
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            //updateUI(user);
+                            textViewStatus.setText("Status: Logged in!!");
+
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            //updateUI(null);
+                            textViewStatus.setText("Status: Logged in Failed!!");
+                        }
+                    }
+                });
+    }
+
+    /**
+     * Signs the user out.
+     */
+    private void signOut() {
+        mAuth.signOut();
+        textViewStatus.setText("Signed Out");
+    }
+
+    /**
+     * Lets the user use Google sign in option for authentication.
+     */
+    private void googleSignIn() {
+        textViewStatus.setText("Status: Logged in Failed!!");
+
+    }
 
 
 }
